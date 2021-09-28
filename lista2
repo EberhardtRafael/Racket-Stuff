@@ -1,0 +1,114 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname lista2) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+(require 2htdp/image)
+;; Nome: Rafael Eberhardt Sarate
+
+;; ==============================================================
+;; 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1 1
+;; ==============================================================
+;; calcula-prop: número número -> número
+;; Obj:
+;; Dado um valor e uma quantidade total, a função devolve a porcentagem (arredondada) do total à qual o valor dado corresponde.
+
+;; Exemplos:
+
+;;   (calcula-prop 4 8) = 50
+;;   (calcula-prop 10 30) = 33.33
+
+(define (calcula-prop valor total)
+       (round (* 100 (/ valor total))) ;Se não arredondar aqui, dá problema na questão 5. Não sendo por isso, não precisaria da 'round'.
+  )
+
+;; Testes: 
+    (check-expect (calcula-prop 1 2) 50)
+    (check-expect (calcula-prop 3 5) 60)
+
+;; ==============================================================
+;; 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2 2
+;; ==============================================================
+;; calcula-aprovados: número número string -> número
+;; Obj:  Dadas as quantidades de aprovados e reprovados em uma turma, além do nome da turma (nessa ordem), a função retorna a proporção de aprovados na turma toda (em porcentagem). 
+;; Exemplos:
+;      (calcula-aprovados 80 50 "A") = 62
+;      (calcula-aprovados 80 20 "U") = 80
+
+(define (calcula-aprovados aprovados reprovados turma)
+  (calcula-prop aprovados (+ aprovados reprovados))
+
+  )
+
+;; Testes: 
+    (check-expect (calcula-aprovados 80 20 "A") 80)
+    (check-expect (calcula-aprovados 50 50 "B") 50)
+
+;; ==============================================================
+;; 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3 3
+;; ==============================================================
+;; mostra-proporcao: string string número -> string
+;; Obj: Dados uma turma, uma situação binária ("aprovados" ou "reprovados"), além da proporção de alunos na turma dada à qual a situação se aplica (nessa ordem), a função retorna uma string relacionando todas essas informações.
+;; Exemplos:
+;;    (mostra-proporcao "Y", "aprovados" 90) = "Na turma Y foram aprovados 90% dos alunos"
+;;    (mostra-proporcao "U" "reprovados" 99) = "Na turma U foram reprovados 99% dos alunos"
+
+;;(Não posso usar  pontuação aqui, ou os testes realizados na correção darão errados.)
+
+(define (mostra-proporcao turma situacao proporcao)
+  (string-append "Na turma " turma " foram " situacao " " (number->string proporcao) "% dos alunos" )
+  )
+
+;; Testes: 
+     (check-expect (mostra-proporcao "Y" "aprovados" 90)  "Na turma Y foram aprovados 90% dos alunos")
+     (check-expect (mostra-proporcao "U" "reprovados" 100) "Na turma U foram reprovados 100% dos alunos" )
+
+;; ==============================================================
+;; 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 4 
+;; ==============================================================
+;; desenha-barra : número string -> retângulo
+;; Obj: Dada uma largura e uma cor, a função devolve um retâgulo de altura 30 px, com a largura e as cores fornecidas.
+;; Exemplos:
+;;    (desenha-barra 30 "green") = (rectangle 30 30 "solid" "green")
+;;    (desenha-barra 50 "white") = (rectangle 50 30 "solid" "white")
+
+(define (desenha-barra largura cor)
+  (rectangle largura 30 "solid" cor)
+  )
+;; Testes:
+      (check-expect (desenha-barra 30 "green")  (rectangle 30 30 "solid" "green"))
+      (check-expect (desenha-barra 10 "black")  (rectangle 10 30 "solid" "black"))
+
+;; ==============================================================
+;; 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5  
+;; ==============================================================
+;; mostra-estatisticas: string número número -> imagem
+;; Obj: Dado o nome de uma turma, a quantidade de aprovados e reprovados, a função constroi um diagrama de barra mostrando as proporções de aprovados e reprovados (arredondadas para o inteiro mais próximo), além da mesma informação em forma de texto ao lado.
+;; Exemplos:
+;;    (mostra-estatisticas "Y" 27 3) gera uma imagem com um diagrama de barras 90% verde e 10 % vermelho, junto das legendas "Na turma Y foram aprovados 90% dos alunos" e "Na turma Y foram reprovados 10% dos alunos"
+      
+;;    (mostra-estatisticas "A" 1 200)  gera uma imagem com um diagrama de barras 100 % vermelho, junto das legendas "Na turma A foram aprovados 0% dos alunos" e "Na turma A foram reprovados 100% dos alunos"
+
+;(Também não posso usar vírgulas de acordo com as regras gramaticais)
+
+(define (mostra-estatisticas turma aprovados reprovados)
+  (beside
+   (beside
+    (desenha-barra (calcula-aprovados aprovados reprovados turma) "darkgreen" )
+    (desenha-barra (calcula-aprovados reprovados aprovados turma) "red")
+    
+    )
+   
+   (above
+    (text (mostra-proporcao turma "aprovados" (calcula-aprovados aprovados reprovados turma)) 15 "darkgreen" )
+    (text (mostra-proporcao turma "reprovados" (calcula-aprovados reprovados aprovados turma) ) 15 "red")
+    )
+   
+   ) 
+       
+  )
+
+;; Testes: (nesta questão deixar apenas chamadas ao invés de testes)
+     (mostra-estatisticas "Y" 27 3)
+     (mostra-estatisticas "A" 1 200)
+     (mostra-estatisticas "U" 3 19)
+
+ 

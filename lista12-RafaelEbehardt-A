@@ -1,0 +1,180 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-intermediate-reader.ss" "lang")((modname lista12-RafaelEbehardt-A) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; Um ListaDeString é
+;; 1. empty, ou
+;; 2. (cons s ls), onde
+;;       s : Sting
+;;       ls : ListaDeString
+
+(define-struct nodo (nome vizinhos))
+;; Um elemento do conjunto Nodo é um par
+;;                (make-nodo n v), onde
+;;       n : String, representa o nome do nodo
+;;       v : ListaDeString, representa os (nomes dos) nodos vizinhos
+
+;; Um Grafo é
+;; 1. empty, ou
+;; 2. (cons n g), onde
+;;       n : Nodo
+;;       g : Grafo
+
+
+;;=================================================
+;; QUESTÃO 1
+;;=================================================
+
+;;Definar (sic) uma constante para representar o grafo de cidades do slide 9 do arquivo com os slides da aula (desconsidereo tamanho dos arcos e o fato de existirem mais de um arco entre dois nodos em alguns casos). Seu grafo deveser uma lista com 16 nodos, um para cada cidade deste mapa. Dê o nome deMAPApara esta constante. Osnomes das cidades devem ser colocados somente com a primeira letra maiúscula e as outras minúsculas (no casode nomes com mais de uma palavra, colocar sem espaço e com a primeira letra da segunda palavra tambémmaiúscula). Exemplos:"Chicago","KansasCity"
+
+;;Está bem difícil de ler os nomes, pois a resolução da imagem é baixa.
+
+(define NODO1 (make-nodo "Winnipeg" (list "St.Marie" "Duluth" "Helena")))
+(define NODO2 (make-nodo "Helena" (list "Winnipeg" "Duluth" "Omaha" "Denver")))
+(define NODO3 (make-nodo "Denver" (list "Helena" "Omaha" "KansasCity" "OklahomaCity" "SantaFe")))
+(define NODO4 (make-nodo "SantaFe" (list "Denver" "OklahomaCity")))
+(define NODO5 (make-nodo "OklahomaCity" (list "SantaFe" "Denver" "KansasCity" "LittleRock")))
+(define NODO6 (make-nodo "KansasCity" (list "OklahomaCity" "Denver" "Omaha" "SaintLouis" )))
+(define NODO7 (make-nodo "Omaha" (list "Denver" "Helena" "Duluth" "Chicago" "KansasCity")))
+(define NODO8 (make-nodo "Duluth" (list  "Helena" "Winnipeg" "St.Marie" "Toronto"  "Chicago" "Omaha")))
+(define NODO9 (make-nodo "St.Marie" (list  "Winnipeg" "Toronto" "Duluth")))
+(define NODO10 (make-nodo "Chicago" (list  "Omaha" "Duluth" "Toronto" "Pittsburgh" "SaintLouis")))
+(define NODO11 (make-nodo "SaintLouis" (list "KansasCity" "Chicago"  "Pittsburgh" "Nashville" "LittleRock")))
+(define NODO12 (make-nodo "LittleRock" (list "OklahomaCity" "SaintLouis" "Nashville")))
+(define NODO13 (make-nodo "Nashville" (list "LittleRock" "SaintLouis" "Pittsburgh" "Atlanta")))
+(define NODO14 (make-nodo "Toronto" (list "Duluth" "St.Marie" "Pittsburgh" "Chicago")))
+(define NODO15 (make-nodo "Pittsburgh" (list "SaintLouis" "Chicago" "Toronto" "Nashville")))
+(define NODO16 (make-nodo "Atlanta" (list "Nashville")))
+
+(define MAPA (list NODO1 NODO2 NODO3 NODO4 NODO5 NODO6 NODO7 NODO8 NODO9 NODO10 NODO11 NODO12 NODO13 NODO14 NODO15 NODO16))
+
+;;=================================================
+;; QUESTÃO 2
+;;=================================================
+;Construa as funçõesestá-na-lista?, que dados um nome (string) e uma lista de strings, nesta ordem, diz seo nome dado está na lista, esubtrai-listaque, dadas duas listas de strings, devolve todos os elementos daprimeira lista que não estão na segunda (ou seja, subtrai a segunda lista da primeira)
+
+
+;;está-na-lista? : String ListaDeString -> booleano
+;;Obj Dados um nome (String) e uma lista de strings, verifica se o nome dado está contido ou não na lista de strings dada; retorna um bolleano #t ou #f caso positivo e caso negativo, respectivamente.
+
+;Ex.:
+;(está-na-lista? "nome" empty) = #f
+;(está-na-lista? "nome" (list "nome" "turma" "escola")) = #t
+
+(check-expect (está-na-lista? "nome" (list "nome" "turma" "escola"))  #t)
+
+(define (está-na-lista? nome ls)
+  (cond
+    [(empty? ls) #f]
+    [else
+     (cond
+       [(string=? nome (first ls)) #t]
+       [else (está-na-lista? nome (rest ls))])]))
+
+
+
+(define (subtrai-lista lista1 lista2)
+  (cond
+    ;;Caso a lista1 esteja ou a lista2 esteja vazia, retorna a lista2. Isto é, caso somente a primeira lista esteja vazia, não há o que subtratir da lista 2 e, caso a segunda o esteja, então, a função assume que não há como subtrair algo do conjunto vazio, retornando o próprio conjunto vazio. 
+    [(or (empty? lista1) (empty? lista2))lista2]    
+    [else
+     ;Senão,
+     (cond
+       ;;Caso o primeiro elemento da lista2 esteja na lista1, não o utilizo 
+       [(está-na-lista? (first lista2) lista1)
+        ;utilizo a função recursivamente para subtrari lista1 do resto de lista2.
+        (subtrai-lista lista1 (rest lista2)) ]
+       [else
+        ;;Caso o primeiro elemento da lista2 não esteja na lista1, então eu o coloco numa lista junto com o resultado da aplicação recursiva de subtrai-lista ao resto da lista2 e lista1
+        (cons (first lista2) (subtrai-lista lista1 (rest lista2)))])])) 
+
+(define LISTATESTE1 (list "nome" "turma" "escola"))
+(define LISTATESTE2 (list "turma" "escola"))
+
+;;=================================================
+;; QUESTÃO 3
+;;=================================================
+
+;Analise a funçãovizinhosmostrada no slide 10 e construa uma função chamadavizinhosda seguinte forma:a entrada deve ser o nome de um nodo, um grafo e uma lista de nomes de nodos (já visitados), nesta ordem, ea saída deve ser a lista dos nomes dos vizinhos deste nodo que não constam da lista de (nomes de nodos de )entrada.
+
+;vizinhos: String Grafo ListadeString -> ListadeString
+;Obj.: o nome de um nodo, um grafo e uma lista de nomes de nodos, a função retorna uma lista contendo os nomes dos vizinhos relativos ao nodo cujo nome é aquele passado como parâmetro não contidos na lista passada.
+
+;;Ex.: 
+(check-expect
+ (vizinhos "Omaha" MAPA (list "Chicago" "Duluth" "Helena"))
+ (list "Denver" "KansasCity"))
+
+(check-expect
+ (vizinhos "Omaha" MAPA '()) (lista-vizinhos "Omaha" MAPA)) 
+
+(define (vizinhos nome grafo lvisitados)
+  ;Define localmente uma lista contendo todos os vizinhos do nodo dado
+  (local
+    (
+     (define lvizinhos (lista-vizinhos nome grafo))     
+     )
+    ;;Subtrai da lista criada a lista passada como parâmetro
+    (subtrai-lista lvisitados lvizinhos)
+    )
+  )
+
+;; lista-vizinhos: String Grafo -> ListaDeString
+;; Dados o nome de um nodo e um grafo, devolve os nomes de
+;; todos os nodos vizinhos do nodo dado.
+
+(check-expect (lista-vizinhos "nome" MAPA) '())
+(check-expect (lista-vizinhos "Helena" MAPA)
+              (list "Winnipeg" "Duluth" "Omaha" "Denver"))
+
+(define (lista-vizinhos nome grafo)
+  (cond
+    [(empty? grafo) empty]
+    [(string=? nome (nodo-nome(first  grafo))) (nodo-vizinhos(first grafo))]
+    [else (lista-vizinhos nome (rest grafo))]))
+;; Se o grafo grafo estiver vazio, retornar a lista vazia.;; Se  o nome do primeiro nodo do grafo for nome, devolve os vizinhos deste nodo ;; senão, procura os vizinhos  do nome n
+
+;;=================================================
+;; QUESTÃO 4
+;;=================================================
+
+;Usando a funçãovizinhosconstruída na questão anterior, desenvolva as funçõesencontra-caminho e encontra-caminho-vizinhos que encontram um caminho em um grafo, se existir, sem entrar em loop infinitoquando forem encontrados ciclos (ver nos slides 24 e 25 os esboços destes programas).
+
+;; encontra-caminho: String String Grafo ListaDeString -> ListaDeStringOUFalse
+;; Dados os nome das cidades origem e destino, um grafo (mapa) e uma lista de cidades já visitadas,
+;; encontra um caminho entre a origem e o destino. Se não existir caminho, devolve false.
+;; Obs.: As cidades dadas devem fazer parte do grafo.
+(define (encontra-caminho origem destino grafo visitadas)
+  (cond
+    [(string=? origem destino) (list destino) ]
+    [else
+     (local
+       (
+        (define visitadas-novo  (cons origem visitadas))
+        
+        (define caminho
+          (cond
+  [(está-na-lista? destino (vizinhos origem grafo visitadas-novo))
+    (cons destino '())]
+  [else   
+   (cons (first (vizinhos origem grafo visitadas-novo))
+         (encontra-caminho
+          (first (subtrai-lista visitadas-novo (vizinhos origem grafo visitadas-novo)))
+          destino grafo visitadas-novo))]))
+        )
+       (cond
+         [(not (empty? caminho)) caminho]
+         [else #f]
+         ))])) 
+;; Se a origem for igual ao destino, retornar a lista com o destino.
+;; senão
+;; definir um nome local (visitadas-novo) que guarda os vsitados, incluindo a origem
+;; (que agora é um nodo já visitado) e outro nome que guarda um caminho entre um dos
+;;  vizinhos não visitados do nodo origem e o destino, se existir caminho:
+;; e testar este nome local (caminho)
+;; se o caminho for uma lista (foi encontrado um caminho), devolver este
+;; caminho, colocando o nodo origem na frente
+;; se o nome for um booleano (não há caminho), devolver false
+
+
+;A última função nao está completa. Por saber que não está funcionando bem, nem vou realizar testes. Ela funciona parcialmente, sem colocar a origem na lista, no entanto. Mas há algumas combinações de origem e destino para as quais ela não funciona (Como (encontra-caminho "Omaha" "Atlanta" MAPA '()) ). Como o semestre está no fim e eu estou no limite por conta do mestrado, vou me dar ao luxo de enviar a lista bastante deficitária. Peço desculpas por isso, mas acredito ter mostrado trabalho ao longo de todo o semestre.
+;Muito obrigado pela cadeira!

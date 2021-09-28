@@ -1,0 +1,362 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname ListaCap10-RafaelEberhardt-D) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;; -----------------
+;; TIPO CARTA-NUMERO:
+;; -----------------
+(define-struct carta-numero (cor valor))
+;; Um elemento do conjunto Carta-numero é
+;;   (make-carta-numero c v)     onde
+;;   c : String, é a cor da carta, que pode ser "azul", "verde", "amarelo" ou "vermelho"
+;;   v : Número, é o número da carta
+
+;; -----------------
+;; TIPO CARTA-ESPECIAL:
+;; -----------------
+(define-struct carta-especial (cor tipo))
+;; Um elemento do conjunto Carta-especial é
+;;   (make-carta-especial c t)     onde
+;;   c : String, é a cor da carta, que pode ser "azul", "verde", "amarelo",  "vermelho" ou "qualquer"
+;;   t : String, é o tipo da carta especial, que pode ser "Compra4", "Compra2", "Inverte", "PulaVez" e "TrocaCor"
+
+;; -----------
+;; TIPO CARTA:
+;; -----------
+;; Um elemento do conjunto Carta pode ser
+;; 1. um elemento do conjunto Carta-numero;
+;; 2. um elemento do conjunto  Carta-especial
+
+(define cartaI (make-carta-numero "azul" 9))
+(define cartaII (make-carta-especial "azul" "Compra2"))
+
+;---------------------------------------------------------------------------------------------
+;;Questão 1:
+
+;; -------------------
+;; TIPO ListaDeCartas:
+;; -------------------
+;; Um elemento do tipo ListadeCartas pode ser:
+;; 1. '();
+;; 2. (cons carta ListadeCartas)
+;Em que o caso 1 corresponde a uma lista vazia;
+;carta, no caso 2, é um elemento do tipo CARTA, ou seja,
+;uma carta-especial ou uma carta-número.
+
+;Exemplos:
+
+(define listaCartasI '())
+
+(define listaCartasII
+  (cons (make-carta-numero "qualquer" 2)
+        (cons (make-carta-numero "azul" 1) '() ))
+  )
+
+(define listaCartasIII
+  (cons (make-carta-especial "azul" "Compra2")
+        listaCartasII)
+  )
+
+(define listaCartasIV
+  (cons (make-carta-numero "qualquer" 3)
+  (cons (make-carta-numero "vermelho" 4) '()))
+  )
+
+(define listaCartasV
+  (cons (make-carta-especial "qualquer" "Compra4")
+  (cons (make-carta-especial "verde" "TrocaCor") listaCartasIV))
+  )
+;---------------------------------------------------------------------------------------------
+
+;; -----------------
+;; TIPO JOGADOR:
+;; -----------------
+(define-struct jogador (nome lista_cartas pontuacao))
+;; Um elemento do conjunto Jogador é
+;; (make-jogador um-nome uma-lista_cartas uma-pontuacao), em que
+;; um-nome: string contendo o nome do jogador;
+;; uma-lista_cartas: lista contendo elementos do tipo CARTA, os quais representam cartas
+;num baralho de Uno;
+; uma-pontuacao: número correspondente à pontuação associada ao jogador.
+
+(define JogadorI (make-jogador "Eduardo" listaCartasIV 50))
+(define JogadorII (make-jogador "Jonas" listaCartasI 20))
+(define JogadorIII (make-jogador "Gabriel" listaCartasV 0))
+(define JogadorIV (make-jogador "Gabriel" listaCartasII 10))
+
+;---------------------------------------------------------------------------------------------
+
+;;Questão 2
+
+;;insere-carta: jogador, carta -> jogador
+;obj: Dados um jogador e uma carta, insere-se a carta dada na lista de cartas associada ao jogador
+;Meu problema aqui é que não há como apagar a variável jogador antiga e criar uma nova com uma nova
+;mão. Então, para se utilizar a função de forma útil, deve-se definir um novo jogador.
+
+;;Exemplo:
+
+(check-expect (insere-carta JogadorI cartaI) (make-jogador
+                                              "Eduardo"
+                                              (cons
+                                               (make-carta-numero "azul" 9)
+                                               (cons
+                                                (make-carta-numero "qualquer" 3)
+                                                (cons
+                                                 (make-carta-numero "vermelho" 4)
+                                                 '())))
+                                              50))
+
+(define (insere-carta player carta)
+  (make-jogador
+   (jogador-nome player)
+   (cons carta (jogador-lista_cartas player))
+   (jogador-pontuacao player)
+   )
+  )
+
+;---------------------------------------------------------------------------------------------
+
+;;Questão 3 (Eu achei essa difícil, não média, mas eu que devo ser meio burro, mesmo. Claro que
+;esse tipo de coisa não vai me deixar mais ansioso.)
+
+;;seleciona-cartas-cor: lista, cor -> lista
+;;obj: Dada uma lista de cartas e uma cor, devolve-se uma lista contendo todas as cartas
+;com a cor dada.
+
+;;Exemplo:
+
+(check-expect (seleciona-cartas-cor listaCartasI "azul") '())
+(check-expect (seleciona-cartas-cor listaCartasII "azul")
+              (cons
+               (make-carta-numero "qualquer" 2)
+               (cons (make-carta-numero "azul" 1) '())))
+
+
+(define (seleciona-cartas-cor lista cor)
+  (cond
+    [(empty? lista) '()]
+    [else
+      (cond
+        [(carta-numero? (first lista))
+                       (cond
+                         [(or
+                           (string=? (carta-numero-cor (first lista)) cor)
+                           (string=? (carta-numero-cor (first lista)) "qualquer")
+                           )
+                          (cons (first lista) (seleciona-cartas-cor (rest lista) cor))]
+                         [else (seleciona-cartas-cor (rest lista) cor)])]
+        [else
+                    (cond
+                         [(or
+                           (string=? (carta-especial-cor (first lista)) cor)
+                           (string=? (carta-especial-cor (first lista)) "qualquer")
+                           )
+                          (cons (first lista) (seleciona-cartas-cor (rest lista) cor))]
+                         [else (seleciona-cartas-cor (rest lista) cor)])]
+        )
+      ])
+  )
+  
+;---------------------------------------------------------------------------------------------
+;;Questão 4 (Ok, esta é bem mais difícil mesmo.)
+
+;;getPontos: lista -> número
+;;obj: Dada uma lista de cartas, calcula-se a quantidade de pontos obtida somando-se
+;a pontuação associada a cada carta de acordo com as regras do Uno:
+;cada carta-número recebe uma pontuação correspondente ao número;
+;a cada carta especial dos tipos "Compra4" e "TrocaCor", associam-se 50 pontos;
+;a cada carta especial dos tipos "Compra2", "Inverte"e  "PulaVez" associam-se 20 pontos.
+;uma lista vazia recebe zero pontos.
+
+;;Exemplos:
+
+(check-expect (getPontos listaCartasI) 0)
+(check-expect (getPontos listaCartasII) 3)
+(check-expect (getPontos listaCartasV) 107)
+
+(define (getPontos lista)
+  (cond
+    [(empty? lista) 0]
+    [else
+     (cond
+       [(carta-numero? (first lista))
+        (+
+         (carta-numero-valor (first lista))
+         (getPontos (rest lista)))]
+       [(carta-especial? (first lista))
+        (cond [
+               (or
+                (string=? (carta-especial-tipo (first lista)) "Compra4")
+                (string=? (carta-especial-tipo (first lista)) "TrocaCor")
+                )
+               (+ 50 (getPontos (rest lista)))]
+              [else (+ 20 (getPontos (rest lista)))]
+              )
+        ]
+       )
+     ]    
+    )  
+  )
+
+;---------------------------------------------------------------------------------------------
+;;ganhador: jogador, jogador -> string
+;;obj: Dados dois jogadores, a função associa uma pontuação refrente à lista de cartas
+;da mão de cada um dos jogadores e soma o valor à pontuação atual de cada um.
+;Em seguida, a função verifica qual deles apresenta menor pontuação, o qual se define como
+;o ganhador.
+;Caso haja um ganhador, a função devolve seu nome, caso haja empate, a função devolve
+;o string "Empate" (sem ponto, pois... sim).
+
+;;Exemplos:
+(check-expect (ganhador JogadorI JogadorII) "Jonas")
+(check-expect (ganhador JogadorI JogadorI) "Empate")
+
+(define (ganhador playerI playerII)
+  (cond
+    [ (<
+       (+ (getPontos (jogador-lista_cartas playerI)) (jogador-pontuacao playerI))
+       (+ (getPontos (jogador-lista_cartas playerII)) (jogador-pontuacao playerII)))
+      (jogador-nome playerI)]
+    [else
+     (if (>
+          (+ (getPontos (jogador-lista_cartas playerI)) (jogador-pontuacao playerI))
+          (+ (getPontos (jogador-lista_cartas playerII)) (jogador-pontuacao playerII)))
+         (jogador-nome playerII)
+         "Empate"
+         )]
+    )
+
+  )
+   
+;---------------------------------------------------------------------------------------------
+;;Questão 5
+;Vou criar duas funções auxiliares antes de fazer a solicitada.
+
+;;verificaMesaNumero: carta, lista -> carta
+;;Dada uma carta da mesa exclusivamente do tipo número, verifica-se se há uma carta na mão
+;que possa ser jogada sobre aquela de acordo com as regras do Uno (uno...).
+;Caso haja, a função devolve a primeira carta possível.
+
+;;Exemplo:
+
+(check-expect (verificaMesaNumero cartaI listaCartasI) "Jogada impossível")
+(check-expect (verificaMesaNumero cartaI listaCartasII) (make-carta-numero "qualquer" 2))
+(check-expect (verificaMesaNumero cartaI listaCartasIV) (make-carta-numero "qualquer" 3))
+(check-expect (verificaMesaNumero cartaI listaCartasV) (make-carta-especial "qualquer" "Compra4"))
+
+
+(define (verificaMesaNumero mesa lista)
+  (cond
+    [(empty? lista) "Jogada impossível"]
+    [else
+     (cond
+       [(carta-numero? (first lista))
+        (cond
+          [(or
+            (string=? (carta-numero-cor (first lista)) "qualquer")
+            (= (carta-numero-valor mesa) (carta-numero-valor (first lista)))
+            (string=? (carta-numero-cor mesa) (carta-numero-cor (first lista)))            
+            )
+           (first lista)
+           ]
+          [else (verificaMesaNumero mesa (rest lista))]
+          )]
+       [else
+        (cond
+          [(or
+            (string=? (carta-especial-cor (first lista)) "qualquer")
+            (string=? (carta-especial-tipo (first lista)) "Compra4")
+            (string=? (carta-especial-tipo (first lista)) "TrocaCor")
+            )
+           (first lista)]
+          [else
+           (cond
+             [(string=? (carta-especial-cor (first lista)) (carta-numero-cor mesa))
+              (first lista)]
+             [else (verificaMesaNumero mesa (rest lista))]
+             )
+           ])]
+       )])
+  )
+
+;---------------------------------------------------------------------------------------------
+;;verificaMesaNumero: carta, lista -> carta
+;;Dada uma carta da mesa exclusivamente do tipo especial, verifica-se se há uma carta na mão
+;que possa ser jogada sobre aquela de acordo com as regras do Uno.
+;Caso haja, a função devolve a primeira carta possível.
+
+;;Exemplo:
+(check-expect (verificaEspecialMesa cartaII listaCartasI) "Jogada impossível")
+(check-expect (verificaEspecialMesa cartaII listaCartasII) (make-carta-numero "qualquer" 2))
+(check-expect (verificaEspecialMesa cartaII listaCartasIV) (make-carta-numero "qualquer" 3))
+(check-expect (verificaEspecialMesa cartaII listaCartasV) (make-carta-especial "qualquer" "Compra4"))
+
+(define (verificaEspecialMesa mesa lista)
+  (cond
+    [(empty? lista) "Jogada impossível"]
+    [else
+     (cond
+       [(carta-especial? (first lista))
+        (cond
+          [(or
+            (string=? (carta-especial-tipo (first lista)) "Compra4")
+            (string=? (carta-especial-tipo (first lista)) "TrocaCor")
+            (string=? (carta-especial-cor (first lista)) "qualquer")
+            )
+           (first lista)]
+          [else
+           (cond
+             [(or               
+               (string=? (carta-especial-tipo mesa) (carta-especial-tipo (first lista)))
+               (string=? (carta-especial-cor mesa) (carta-especial-cor (first lista)))           
+               )
+              (first lista)
+              ]
+             [else (verificaEspecialMesa mesa (rest lista))]
+             )
+           ]         
+          )]
+       [else
+        (cond
+          [(or
+            (string=? (carta-numero-cor (first lista)) "qualquer")            
+            (string=? (carta-especial-cor mesa) (carta-numero-cor (first lista)))           
+            )
+           (first lista)]
+          [else
+           (cond
+             [(string=? (carta-especial-cor (first lista)) (carta-numero-cor mesa))
+              (first lista)]
+             [else (verificaEspecialMesa mesa (rest lista))]
+             )
+           ])]
+       )
+     ]
+    )
+  )
+
+;---------------------------------------------------------------------------------------------
+;;joga: carta, jogador -> carta
+;;obj: Dada uma carta correspondente a uma carta da mesa e um jogador, verifica-se
+;se o jogador tem alguma carta que possa jogar.
+;Caso o tenha, a função devolve a primeira carta possível.
+
+;;Exemplo:
+
+(check-expect (joga cartaI JogadorI) (make-carta-numero "qualquer" 3))
+
+(define (joga mesa player)
+  (cond
+    [(carta-numero? mesa)
+     (verificaMesaNumero mesa (jogador-lista_cartas player))]
+    [(carta-especial? mesa)
+     (verificaEspecialMesa mesa (jogador-lista_cartas player))
+     ]    
+    )  
+  )
+
+;---------------------------------------------------------------------------------------------
+;Questão 6)
+;Peço desculpas, mas não consegui terminar a tempo.
+;Estou dando atenção à cadeira, lendo o livro e fazendo exercícios,
+;mas estou perto de defender o mestrado na Física Teórica junto ao IF, então, às vezes, acabo
+;não conseguindo fazer a tarefa inteira, pois preciso dar prioridade ao mestrado.

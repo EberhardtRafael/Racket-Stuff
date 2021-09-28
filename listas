@@ -1,0 +1,56 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname listas) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;planetas é uma lista de strings:
+(define planetas
+  (cons 'Netuno
+        (cons 'Urano
+              (cons 'Saturno
+                    (cons 'Júpiter
+                          (cons 'Marte
+                                (cons 'Terra
+                                      (cons 'Vênus
+                                            ( cons 'Mercúrio '())
+))))))))
+;Interpretação: cada string representa um planeta do Sistema Solar.
+
+;---------------------------------------------------------------------------------------------
+;contemplaneta? lista, string -> boolean
+;obj: dada uma lista de strings e uma string qualquer, verifica se esta está naquela.
+;Ex.:
+
+(check-expect (contemplaneta? planetas 'Terra) #true)
+(check-expect (contemplaneta? planetas 'Plutao) #false)
+
+(define (contemplaneta? lista_planetas planeta)
+  (cond
+    [(empty? lista_planetas) false]
+    [else
+     (cond
+       [(symbol=? (first lista_planetas) planeta) true]
+       [else (contemplaneta? (rest lista_planetas) planeta)]
+       )
+     ]
+    )
+  )
+
+;---------------------------------------------------------------------------------------------
+
+
+(define (soma_lista lista)
+
+
+
+
+ )
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,58 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname arvore-testes) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;ABP = Árvore Binária de Pesquisa
+
+(define-struct par (id conteudo))
+(define-struct no (id conteudo E D))
+
+(define PAR1 (make-par 1 "A"))
+(define PAR2 (make-par 11 "B"))
+(define PAR3 (make-par 3 "C"))
+(define PAR4 (make-par 15 "D"))
+(define PAR5 (make-par 5 "E"))
+
+(define listaPares (cons PAR1 (cons PAR2 (cons PAR3 (cons PAR4 (cons PAR5 '()))))))
+
+(define Li
+  (list (make-par 11 "F")
+        (make-par 20 "E")
+        (make-par 3 "B")
+        (make-par 15 "D")
+        (make-par 17 "C")
+        (make-par 10 "A")))
+
+(define (insere-no id cont ABP)
+  (cond
+    [(empty? ABP) (make-no id cont '() '())]
+    [else
+     (cond
+       [(> id (no-id ABP))
+        (make-no
+         (no-id ABP)
+         (no-conteudo ABP)
+         (no-E ABP)
+         (insere-no id cont (no-D ABP)))
+        ]
+       [(< id (no-id ABP)) ;Não else porque pode ser = ainda.
+        (make-no
+         (no-id ABP)
+         (no-conteudo ABP)
+         (insere-no id cont (no-E ABP))
+         (no-D ABP) ) ])]) )
+
+
+(define (make-tree lista)
+  (cond
+    [(empty? lista) '()]
+    [else
+     (insere-no
+      (par-id (first lista))
+      (par-conteudo (first lista))
+      (make-tree (rest lista))) ]  ))
+
+
+
+
+
+

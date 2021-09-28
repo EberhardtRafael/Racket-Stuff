@@ -1,0 +1,90 @@
+;; The first three lines of this file were inserted by DrRacket. They record metadata
+;; about the language level of this file in a form that our tools can easily process.
+#reader(lib "htdp-beginner-reader.ss" "lang")((modname arvores) (read-case-sensitive #t) (teachpacks ()) (htdp-settings #(#t constructor repeating-decimal #f #t none #f () #f)))
+;-----------------
+;  TIPO PESSOA
+;-----------------
+(define-struct pessoa (nome cor_olhos tipo_sangue altura pai mae))
+;;Um elemento do tipo Pessoa pode ser:
+;1. "null", representando falta de informação, ou
+;2.(make-pessoa N C T A P M)
+;;Em que:
+;;N: String, representando o nome da pessoa;
+;;C: String, representando a cor dos olhos da pessoa;
+;;T: String, representando o tipo sanguíneo da pessoa;
+;;A: Número, representando a altura da pessoa;
+;;P: Pessoa, representando o pai da pessoa;
+;;M: Pessoa, representando a mãe da pessoa.
+
+(define pessoa1 (make-pessoa "Osdonavan" "azul" "A" 1.70 '() '()))
+(define pessoa2 (make-pessoa "Margarethe" "castanho" "B" 1.63 '() '()))
+(define pessoa3 (make-pessoa "Osdorethe" "verde" "AB" 1.80 pessoa1 pessoa2))
+
+;---------------------------------------------------------------------------------------------
+
+;-----------------
+;  TIPO FAMILIA
+;-----------------
+;;Um elemento do tipo Pessoa pode ser:
+;1. '();
+;2.pessoa.
+
+(define familia1 (list pessoa1 pessoa2 pessoa3))
+;---------------------------------------------------------------------------------------------
+
+;;tem_azul: lista de pessoas -> pessoa
+;;obj: Dada uma lista de pessoas representando uma família, verifica se há alguém com olhos
+;azuis na familia. Caso haja, retorna a pessoa.
+;;Exemplo:
+
+(check-expect (tem_azul familia1) pessoa1)
+
+
+(define (tem_azul familia)
+(cond
+  [(empty? familia) '()]
+  [else
+   (cond
+     [(string=? (pessoa-cor_olhos (first familia)) "azul")
+      (first familia)]
+     [else
+      (tem_azul(rest familia))]
+     )
+   ]))
+
+;---------------------------------------------------------------------------------------------
+
+;;Em seguida, posso resolver o mesmo problema
+;sem que seja dada uma lista contendo os membros da família!
+
+(define (familiar_olhos_azuis? pessoa)
+  (cond
+    [(empty? pessoa) #false]
+    [(string=? (pessoa-cor_olhos pessoa) "azul") #true]
+    [else
+     (or
+      (familiar_olhos_azuis? (pessoa-pai pessoa))
+      (familiar_olhos_azuis? (pessoa-mae pessoa))
+      )
+     
+     ]
+    )
+  )
+
+;---------------------------------------------------------------------------------------------
+;A família acima já é um exemplo simples de árvore binária.
+;Vou escrever uma função para retornar uma lista contendo os nomes de cada elemento.
+
+(define (id arvore)
+  (cond
+    [(empty? arvore) '()]
+    [else
+     (append
+      (list (pessoa-nome (first arvore)))
+      (id (rest arvore)))
+     ]
+    )
+  )
+
+
+

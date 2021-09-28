@@ -1,0 +1,24 @@
+#lang racket
+
+;(define teste 1)
+;(+ 1 teste)
+;(display teste)
+
+
+(define (aumenta-um entrada quantidade)
+  (printf "~v \n" entrada)
+  (if (equal? entrada quantidade) "fim" (aumenta-um (+ 1 entrada) quantidade)
+   )
+  )
+
+(define (incrementa-um numero)
+  (+ 1 numero)
+)
+
+(define (converte-hora hora relogio)
+  (printf "~v \n" (- hora relogio))
+  (if (< (- hora relogio) 1) ;condição
+      (+ relogio (/ (* 10 (- hora relogio)) 6)) ;caso verdadeiro
+      (converte-hora hora (+ 1 relogio)) ;caso falso
+  )
+)
